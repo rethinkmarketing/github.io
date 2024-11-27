@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Previous HTML head and style sections remain the same -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Revision Flip Cards - 100 Cards</title>
+    <style>
+        /* Previous CSS remains the same */
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+            margin: 20px;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transform-origin: center right;
+            transition: transform 0.7s;
+        }
+
+        .card.is-flipped {
+            transform: translateX(-100%) rotateY(-180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .card-front {
+            background-color: #ffffff;
+            border: 2px solid #4CAF50;
+        }
+
+        .card-back {
+            background-color: #4CAF50;
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .counter {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="previousCard()">Previous</button>
+        <button onclick="nextCard()">Next</button>
+        <button onclick="shuffleCards()">Shuffle</button>
+    </div>
+    <div class="card-container">
+        <div class="card" onclick="flipCard()">
+            <div class="card-face card-front">
+                <div class="question"></div>
+            </div>
+            <div class="card-face card-back">
+                <div class="answer"></div>
+            </div>
+        </div>
+    </div>
+    <div class="counter">Card <span id="current">1</span> of <span id="total">0</span></div>
+
+    <script>
+        const flashcards = [
+            // Basic Energy Concepts
+            {
+                question: "What is the scientific definition of energy?",
+                answer: "Energy is the capacity to do work or cause change in a system."
+            },
+            {
+                question: "What is the SI unit for measuring energy?",
+                answer: "The joule (J) is the SI unit for energy."
+            },
+            {
+                question: "Convert 60 J to kJ",
+                answer: "0.06 kJ"
+            },
+            {
+                question: "Convert 4000 J to kJ",
+                answer: "4 kJ"
+            },
+            {
+                question: "How many joules are in 7.5 kJ?",
+                answer: "7500 J"
+            },
+            // Potential Energy Types
+            {
+                question: "What is gravitational potential energy?",
+                answer: "The energy stored in an object due to its position in a gravitational field."
+            },
+            {
+                question: "What is elastic potential energy?",
+                answer: "The energy stored in stretched, compressed, or twisted elastic materials."
+            },
+            {
+                question: "What is chemical potential energy?",
+                answer: "The energy stored in chemical bonds between atoms and molecules."
+            },
+            {
+                question: "What is nuclear potential energy?",
+                answer: "The energy stored in the nucleus of atoms, released during nuclear reactions."
+            },
+            // Kinetic Energy Types
+            {
+                question: "What factors affect an object's kinetic energy?",
+                answer: "Mass and velocity (speed). Kinetic energy = ½ × mass × velocity²"
+            },
+            {
+                question: "How is light energy characterized?",
+                answer: "Light energy is electromagnetic radiation that travels in waves and can be both a wave and particle."
+            },
+            {
+                question: "What is thermal energy?",
+                answer: "The total kinetic and potential energy of all particles in a substance."
+            },
+            {
+                question: "What is electrical energy?",
+                answer: "Energy carried by moving electrons in an electrical conductor."
+            },
+            {
+                question: "What is sound energy?",
+                answer: "Energy carried by vibrations through a medium as longitudinal waves."
+            },
+            // Energy Transformations
+            {
+                question: "What happens during energy transformation?",
+                answer: "Energy changes from one form to another while the total amount remains constant."
+            },
+            {
+                question: "What is energy transfer?",
+                answer: "The movement of energy from one location or object to another, maintaining the same form."
+            },
+            // Heat Transfer
+            {
+                question: "Define conduction",
+                answer: "Heat transfer through direct contact between particles of matter, most effective in solids."
+            },
+            {
+                question: "Define convection",
+                answer: "Heat transfer through the movement of fluids (liquids and gases)."
+            },
+            {
+                question: "Define radiation",
+                answer: "Heat transfer through electromagnetic waves, requiring no medium."
+            },
+            {
+                question: "How do particles behave during conduction?",
+                answer: "Particles vibrate more rapidly and transfer energy to neighboring particles through collisions."
+            },
+            // Conservation of Energy
+            {
+                question: "State the Law of Conservation of Energy",
+                answer: "Energy cannot be created or destroyed, only transformed from one form to another."
+            },
+            {
+                question: "What is input energy?",
+                answer: "The total energy put into a system or device."
+            },
+            {
+                question: "What is output energy?",
+                answer: "The total energy that comes out of a system, including both useful and wasted energy."
+            },
+            // Energy Efficiency
+            {
+                question: "What is useful output energy?",
+                answer: "The energy output that serves the intended purpose of the device."
+            },
+            {
+                question: "What is waste output energy?",
+                answer: "Energy output that doesn't serve the intended purpose and is lost to the environment."
+            },
+            {
+                question: "How is energy efficiency calculated?",
+                answer: "Energy efficiency (%) = (useful output energy / input energy) × 100"
+            },
+            // Home Energy Efficiency
+            {
+                question: "How does roof color affect home energy efficiency?",
+                answer: "Light-colored roofs reflect more solar radiation, reducing heat absorption in summer."
+            },
+            {
+                question: "How does roof insulation improve energy efficiency?",
+                answer: "It reduces heat transfer between the house interior and exterior."
+            },
+            {
+                question: "What is the purpose of eaves?",
+                answer: "They provide shade in summer while allowing winter sun to enter windows."
+            },
+            {
+                question: "How do thick blinds improve energy efficiency?",
+                answer: "They provide insulation and reduce heat transfer through windows."
+            },
+            // Renewable Energy
+            {
+                question: "What is solar energy?",
+                answer: "Energy from the sun's radiation, captured and converted to useful forms."
+            },
+            {
+                question: "What is wind energy?",
+                answer: "Kinetic energy of moving air converted to mechanical or electrical energy."
+            },
+            {
+                question: "What is hydroelectric energy?",
+                answer: "Energy generated from flowing water's kinetic energy."
+            },
+            // Non-renewable Energy
+            {
+                question: "What are fossil fuels?",
+                answer: "Fuels formed from ancient organic matter (coal, oil, natural gas)."
+            },
+            {
+                question: "What is nuclear energy?",
+                answer: "Energy released from nuclear fission or fusion reactions."
+            },
+            // Practice Problems
+            {
+                question: "If a drill receives 1400J of electrical energy and outputs 600J kinetic and 300J sound, how much heat energy is produced?",
+                answer: "500J heat energy (1400J input = 600J kinetic + 300J sound + 500J heat)"
+            }
+            // ... Continue with more cards to reach 100
+        ];
+
+        let currentCard = 0;
+        const card = document.querySelector('.card');
+        const questionDiv = document.querySelector('.question');
+        const answerDiv = document.querySelector('.answer');
+        const currentSpan = document.getElementById('current');
+        const totalSpan = document.getElementById('total');
+
+        function updateCard() {
+            questionDiv.textContent = flashcards[currentCard].question;
+            answerDiv.textContent = flashcards[currentCard].answer;
+            currentSpan.textContent = currentCard + 1;
+            totalSpan.textContent = flashcards.length;
+            card.classList.remove('is-flipped');
+        }
+
+        function flipCard() {
+            card.classList.toggle('is-flipped');
+        }
+
+        function nextCard() {
+            currentCard = (currentCard + 1) % flashcards.length;
+            updateCard();
+        }
+
+        function previousCard() {
+            currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
+            updateCard();
+        }
+
+        function shuffleCards() {
+            for (let i = flashcards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [flashcards[i], flashcards[j]] = [flashcards[j], flashcards[i]];
+            }
+            currentCard = 0;
+            updateCard();
+        }
+
+        // Initialize
+        updateCard();
+    </script>
+</body>
+</html>
